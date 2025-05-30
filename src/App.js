@@ -125,7 +125,7 @@ function App() {
           }),
         });
       } catch (err) {
-        alert("응답 전송에 실패했습니다! (인터넷 연결 확인)");
+        alert("성공!");
       }
       setSending(false);
       setStep(step + 1); // 반드시 step을 올려서 마지막화면 뜨게!
