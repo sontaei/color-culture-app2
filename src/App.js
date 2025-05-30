@@ -6,7 +6,6 @@ const QUESTIONS = [
     options: ["빨강", "분홍", "하늘색", "연보라"],
     colors: ["#FF4B4B", "#FF92C2", "#81E3F9", "#CAB7FF"]
   },
-  // ... (다른 질문도 동일하게)
   {
     q: "중요한 면접에서 면접관이 입고 있는 넥타이의 색은?",
     options: ["노랑", "남색", "검정", "초록"],
@@ -26,15 +25,53 @@ const QUESTIONS = [
     q: "깊은 밤 꿈속에서 만난 낯선 사람이 입고 있던 옷의 색은?",
     options: ["검정", "자주색", "회색", "짙은 녹색"],
     colors: ["#222222", "#7D3C98", "#BDBDBD", "#006400"]
-  },
+  }
 ];
 
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzKyKTWpJTHKAVwMgbZmDo0kYmpZ_TlwxaDMiN98_xShL4fktR7PoWClwmOuh7gscZ6tQ/exec";
+
 function App() {
+  const [name, setName] = useState("");
+  const [nameDone, setNameDone] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState(Array(QUESTIONS.length).fill(null));
   const [selected, setSelected] = useState(null);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e) => {
+  // 이름 입력 화면
+  if (!nameDone) {
+    return (
+      <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
+        <div style={{background:"white",padding:36,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.07)",maxWidth:400}}>
+          <h1 style={{fontSize:25, fontWeight:700, marginBottom:16, textAlign:"center"}}>참여자 이름 입력</h1>
+          <p style={{color:"#555",fontSize:15, textAlign:"center", marginBottom:12}}>
+            설문 참여자 이름을 입력해 주세요.<br />(본명, 별명, 이니셜 모두 가능)
+          </p>
+          <input
+            type="text"
+            value={name}
+            onChange={e=>setName(e.target.value)}
+            placeholder="이름을 입력하세요"
+            style={{
+              width:"100%",padding:"14px",fontSize:17,borderRadius:7,border:"1.5px solid #bbb",marginBottom:18
+            }}
+          />
+          <button
+            onClick={()=>name && setNameDone(true)}
+            disabled={!name}
+            style={{
+              width:"100%",padding:"13px 0",background:name?"#4B7BFF":"#ddd",color:"white",border:"none",borderRadius:8,fontWeight:600,fontSize:17,cursor:name?"pointer":"not-allowed"
+            }}
+          >
+            설문 시작
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 설문 끝나면 구글시트로 전송
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const nextAnswers = [...answers];
     nextAnswers[step - 1] = selected;
@@ -44,81 +81,38 @@ function App() {
     if (step < QUESTIONS.length) {
       setStep(step + 1);
     } else {
+      setSending(true);
+      try {
+        await fetch(SHEET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            answers: nextAnswers
+          }),
+        });
+      } catch (err) {
+        alert("응답 전송에 실패했습니다! (인터넷 확인)");
+      }
+      setSending(false);
       setStep(step + 1);
     }
   };
 
-  if (step === 0) {
-    return (
-      <div style={{
-        minHeight:"100vh",
-        display:"flex",
-        justifyContent:"center",
-        alignItems:"center",
-        background:"#F6F7FB"
-      }}>
-        <div style={{
-          background:"white",
-          padding:30,
-          borderRadius:12,
-          boxShadow:"0 4px 16px rgba(0,0,0,0.07)",
-          maxWidth:400
-        }}>
-          <h1 style={{
-            fontSize:24, fontWeight:700, marginBottom:12, textAlign:"center"
-          }}>색채 감정 실험</h1>
-          <p style={{
-            color:"#555",fontSize:15, textAlign:"center", marginBottom:18
-          }}>
-            각 상황에 어울리는 색을 골라주세요.<br />
-            오방색 1개 + 서양 감정색 3개 중에서<br />
-            <b>당신의 선택</b>이 색채 인식 연구에 사용됩니다.
-          </p>
-          <button
-            onClick={() => setStep(1)}
-            style={{
-              padding:"12px 32px",background:"#4B7BFF",color:"white",
-              border:"none",borderRadius:8,fontWeight:600,
-              fontSize:18,cursor:"pointer"
-            }}
-          >
-            참여 시작
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (step > QUESTIONS.length) {
     return (
-      <div style={{
-        minHeight:"100vh",
-        display:"flex",
-        justifyContent:"center",
-        alignItems:"center",
-        background:"#F6F7FB"
-      }}>
-        <div style={{
-          background:"white",
-          padding:30,
-          borderRadius:12,
-          boxShadow:"0 4px 16px rgba(0,0,0,0.07)",
-          maxWidth:400,textAlign:"center"
-        }}>
-          <h2 style={{
-            fontSize:20, fontWeight:700, marginBottom:8
-          }}>참여해주셔서 감사합니다!</h2>
-          <p style={{
-            color:"#666", fontSize:15, marginBottom:15
-          }}>
+      <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
+        <div style={{background:"white",padding:36,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.07)",maxWidth:400,textAlign:"center"}}>
+          <h2 style={{fontSize:21, fontWeight:700, marginBottom:8}}>참여해주셔서 감사합니다!</h2>
+          <p style={{color:"#666", fontSize:15, marginBottom:15}}>
             여러분의 데이터는<br />
-            “감정별 색채 인식 연구”에 소중하게 쓰입니다.
+            “감정별 색채 인식 연구”에 소중하게 쓰입니다.<br />
+            <span style={{color:"#4B7BFF"}}>(관리자는 구글 시트에서 결과 확인 가능)</span>
           </p>
           <button
-            onClick={() => { setStep(0); setAnswers(Array(QUESTIONS.length).fill(null)); }}
+            onClick={() => { setStep(0); setAnswers(Array(QUESTIONS.length).fill(null)); setNameDone(false); }}
             style={{
-              padding:"10px 28px",background:"#B7D2FF",color:"#244177",
-              border:"none",borderRadius:8,fontWeight:600,fontSize:16,cursor:"pointer"
+              padding:"10px 28px",background:"#B7D2FF",color:"#244177",border:"none",borderRadius:8,fontWeight:600,fontSize:16,cursor:"pointer"
             }}
           >
             처음으로
@@ -128,7 +122,8 @@ function App() {
     );
   }
 
-  const currQ = QUESTIONS[step - 1];
+  // 설문 질문 화면
+  const currQ = QUESTIONS[step];
 
   return (
     <div style={{
@@ -148,7 +143,7 @@ function App() {
       }}>
         <h2 style={{
           fontSize:21,fontWeight:700,marginBottom:28, textAlign:"center"
-        }}>{`Q${step}. ${currQ.q}`}</h2>
+        }}>{`Q${step+1}. ${currQ.q}`}</h2>
         <form onSubmit={handleSubmit} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:22
         }}>
@@ -190,20 +185,20 @@ function App() {
           )}
           <button
             type="submit"
-            disabled={!selected}
+            disabled={!selected || sending}
             style={{
               width:180,padding:"15px 0",background: selected ? "#FF80B7":"#ddd",
               color: selected ? "white":"#888",
               border:"none",borderRadius:7,fontWeight:700,fontSize:18,cursor: selected ? "pointer":"not-allowed"
             }}
           >
-            제출하기
+            {step === QUESTIONS.length - 1 ? "제출하기" : "다음"}
           </button>
         </form>
         <div style={{
           marginTop:22, fontSize:13, color:"#888", textAlign:"center"
         }}>
-          {`상황 ${step} / ${QUESTIONS.length}`}
+          {`상황 ${step+1} / ${QUESTIONS.length}`}
         </div>
       </div>
     </div>
