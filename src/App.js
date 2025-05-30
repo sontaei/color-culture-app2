@@ -187,7 +187,7 @@ function App() {
         setContinentResult(continent);
         setTimeout(() => {
           setShowThankYou(true);
-        }, 2000);
+        }, 5000);
       }, 3000);
       setStep(step + 1);
     }
