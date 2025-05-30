@@ -99,14 +99,24 @@ function App() {
     }
   };
 
+  // **설문 완료 후 "감사 인사" 화면**
   if (step > QUESTIONS.length) {
     return (
       <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
-        <div style={{background:"white",padding:36,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.07)",maxWidth:400,textAlign:"center"}}>
-          <h2 style={{fontSize:21, fontWeight:700, marginBottom:8}}>참여해주셔서 감사합니다!</h2>
-          <p style={{color:"#666", fontSize:15, marginBottom:15}}>
+        <div style={{
+          background:"white",
+          padding:36,
+          borderRadius:12,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.07)",
+          maxWidth:400,
+          textAlign:"center"
+        }}>
+          <h2 style={{fontSize:28, fontWeight:700, marginBottom:18, color:"#4B7BFF"}}>
+            참여해주셔서 감사합니다!
+          </h2>
+          <p style={{color:"#666", fontSize:15, marginBottom:18}}>
             여러분의 데이터는<br />
-            “감정별 색채 인식 연구”에 소중하게 쓰입니다.<br />
+            <b style={{color:"#244177"}}>감정별 색채 인식 연구</b>에 소중하게 쓰입니다.<br />
             <span style={{color:"#4B7BFF"}}>(관리자는 구글 시트에서 결과 확인 가능)</span>
           </p>
           <button
