@@ -28,14 +28,21 @@ const QUESTIONS = [
   }
 ];
 
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbwQ8R_uMLUJwXjYGt20JGnqbTgvHt-bn9vmEBZjK2jpAV_tWf5JDYw800xwAOz-Oyvv/exec"
+const CONTINENTS = [
+  "북미대륙", "남미대륙", "아프리카대륙", "유럽대륙", "아시아대륙", "오세아니아대륙"
+];
+
 function App() {
   const [name, setName] = useState("");
   const [nameDone, setNameDone] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState(Array(QUESTIONS.length).fill(null));
   const [selected, setSelected] = useState(null);
-  const [sending, setSending] = useState(false);
+
+  // 결과 해석 중, 결과, 감사 화면 상태
+  const [showResultProcessing, setShowResultProcessing] = useState(false);
+  const [continentResult, setContinentResult] = useState(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   // 이름 입력 화면
   if (!nameDone) {
@@ -69,8 +76,65 @@ function App() {
     );
   }
 
-  // 마지막 "감사합니다" 화면: step >= QUESTIONS.length이면 무조건!
-  if (step >= QUESTIONS.length) {
+  // "결과 해석 중..." 화면
+  if (showResultProcessing) {
+    return (
+      <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
+        <div style={{
+          background:"white",
+          padding:36,
+          borderRadius:12,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.07)",
+          maxWidth:400,
+          textAlign:"center"
+        }}>
+          <h2 style={{fontSize:26, fontWeight:700, color:"#4B7BFF", marginBottom:12}}>
+            결과 해석 중...
+          </h2>
+          <div className="loader" style={{margin:"26px auto 8px", width:48, height:48}}>
+            <div style={{
+              border: "6px solid #f3f3f3",
+              borderTop: "6px solid #4B7BFF",
+              borderRadius: "50%",
+              width: 48,
+              height: 48,
+              animation: "spin 1s linear infinite"
+            }} />
+          </div>
+          <style>
+            {`@keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }`}
+          </style>
+          <p style={{color:"#777", marginTop:18, fontSize:15}}>색채 심리 분석 중입니다...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // "대륙 결과" 화면
+  if (continentResult && !showThankYou) {
+    return (
+      <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
+        <div style={{
+          background:"white",
+          padding:36,
+          borderRadius:12,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.07)",
+          maxWidth:400,
+          textAlign:"center"
+        }}>
+          <h2 style={{fontSize:25, fontWeight:700, marginBottom:18, color:"#4B7BFF"}}>
+            당신의 색채 심리는
+          </h2>
+          <p style={{color:"#FF80B7",fontWeight:900, fontSize:28, marginBottom:24}}>
+            {continentResult} 입니다!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // "감사합니다" 화면
+  if (showThankYou) {
     return (
       <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
         <div style={{
@@ -86,11 +150,13 @@ function App() {
           </h2>
           <p style={{color:"#666", fontSize:15, marginBottom:18}}>
             여러분의 데이터는<br />
-            <b style={{color:"#244177"}}>감정별 색채 인식 연구</b>에 소중하게 쓰입니다.<br />
-            <span style={{color:"#4B7BFF"}}>(관리자는 구글 시트에서 결과 확인 가능)</span>
+            <b style={{color:"#244177"}}>감정별 색채 인식 연구</b>에 소중하게 쓰입니다.
           </p>
           <button
-            onClick={() => { setStep(0); setAnswers(Array(QUESTIONS.length).fill(null)); setNameDone(false); }}
+            onClick={() => {
+              setStep(0); setAnswers(Array(QUESTIONS.length).fill(null));
+              setNameDone(false); setContinentResult(null); setShowThankYou(false);
+            }}
             style={{
               padding:"10px 28px",background:"#B7D2FF",color:"#244177",border:"none",borderRadius:8,fontWeight:600,fontSize:16,cursor:"pointer"
             }}
@@ -102,32 +168,28 @@ function App() {
     );
   }
 
-  // 설문 제출 & 저장
-  const handleSubmit = async (e) => {
+  // 설문 제출(마지막 질문 이후)
+  const handleSubmit = (e) => {
     e.preventDefault();
     const nextAnswers = [...answers];
-    nextAnswers[step] = selected; // step 위치에 답 저장
+    nextAnswers[step] = selected;
     setAnswers(nextAnswers);
     setSelected(null);
 
     if (step < QUESTIONS.length - 1) {
       setStep(step + 1);
     } else {
-      setSending(true);
-      try {
-        await fetch(SHEET_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            answers: nextAnswers
-          }),
-        });
-      } catch (err) {
-        alert("성공!");
-      }
-      setSending(false);
-      setStep(step + 1); // 반드시 step을 올려서 마지막화면 뜨게!
+      // 결과 해석 중 → 3초 후 대륙 결과 → 2초 후 감사합니다
+      setShowResultProcessing(true);
+      setTimeout(() => {
+        setShowResultProcessing(false);
+        const continent = CONTINENTS[Math.floor(Math.random() * CONTINENTS.length)];
+        setContinentResult(continent);
+        setTimeout(() => {
+          setShowThankYou(true);
+        }, 2000);
+      }, 3000);
+      setStep(step + 1);
     }
   };
 
@@ -152,7 +214,7 @@ function App() {
       }}>
         <h2 style={{
           fontSize:21,fontWeight:700,marginBottom:28, textAlign:"center"
-        }}>{Q${step+1}. ${currQ.q}}</h2>
+        }}>{`Q${step+1}. ${currQ.q}`}</h2>
         <form onSubmit={handleSubmit} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:22
         }}>
@@ -194,7 +256,7 @@ function App() {
           )}
           <button
             type="submit"
-            disabled={!selected || sending}
+            disabled={!selected}
             style={{
               width:180,padding:"15px 0",background: selected ? "#FF80B7":"#ddd",
               color: selected ? "white":"#888",
@@ -207,7 +269,7 @@ function App() {
         <div style={{
           marginTop:22, fontSize:13, color:"#888", textAlign:"center"
         }}>
-          {상황 ${step+1} / ${QUESTIONS.length}}
+          {`상황 ${step+1} / ${QUESTIONS.length}`}
         </div>
       </div>
     </div>
