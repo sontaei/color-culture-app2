@@ -28,7 +28,7 @@ const QUESTIONS = [
   }
 ];
 
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbwl8KpdQ14BREL_AGVUypqzttJ3z9K7cVtrAkS5bkRSo06iwfNRVBJ-_vKwcfOyUAX5/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbxqgzt3DOM4uL7Y2GuaXupegicCO8KW3e9Vt2Sk5yvldhcJl8jXzN0ybyLxWqp2qNRo/exec";
 
 function App() {
   const [name, setName] = useState("");
