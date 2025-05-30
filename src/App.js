@@ -28,7 +28,7 @@ const QUESTIONS = [
   }
 ];
 
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbzKyKTWpJTHKAVwMgbZmDo0kYmpZ_TlwxaDMiN98_xShL4fktR7PoWClwmOuh7gscZ6tQ/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwl8KpdQ14BREL_AGVUypqzttJ3z9K7cVtrAkS5bkRSo06iwfNRVBJ-_vKwcfOyUAX5/exec";
 
 function App() {
   const [name, setName] = useState("");
@@ -70,37 +70,8 @@ function App() {
     );
   }
 
-  // 설문 끝나면 구글시트로 전송
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const nextAnswers = [...answers];
-    nextAnswers[step - 1] = selected;
-    setAnswers(nextAnswers);
-    setSelected(null);
-
-    if (step < QUESTIONS.length) {
-      setStep(step + 1);
-    } else {
-      setSending(true);
-      try {
-        await fetch(SHEET_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            answers: nextAnswers
-          }),
-        });
-      } catch (err) {
-        alert("응답 전송에 실패했습니다! (인터넷 확인)");
-      }
-      setSending(false);
-      setStep(step + 1);
-    }
-  };
-
-  // **설문 완료 후 "감사 인사" 화면**
-  if (step > QUESTIONS.length) {
+  // 마지막 "감사합니다" 화면: step >= QUESTIONS.length이면 무조건!
+  if (step >= QUESTIONS.length) {
     return (
       <div style={{minHeight:"100vh",display:"flex",justifyContent:"center",alignItems:"center",background:"#F6F7FB"}}>
         <div style={{
@@ -131,6 +102,35 @@ function App() {
       </div>
     );
   }
+
+  // 설문 제출 & 저장
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const nextAnswers = [...answers];
+    nextAnswers[step] = selected; // step 위치에 답 저장
+    setAnswers(nextAnswers);
+    setSelected(null);
+
+    if (step < QUESTIONS.length - 1) {
+      setStep(step + 1);
+    } else {
+      setSending(true);
+      try {
+        await fetch(SHEET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            answers: nextAnswers
+          }),
+        });
+      } catch (err) {
+        alert("응답 전송에 실패했습니다! (인터넷 연결 확인)");
+      }
+      setSending(false);
+      setStep(step + 1); // 반드시 step을 올려서 마지막화면 뜨게!
+    }
+  };
 
   // 설문 질문 화면
   const currQ = QUESTIONS[step];
