@@ -28,8 +28,7 @@ const QUESTIONS = [
   }
 ];
 
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxqgzt3DOM4uL7Y2GuaXupegicCO8KW3e9Vt2Sk5yvldhcJl8jXzN0ybyLxWqp2qNRo/exec";
-
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwQ8R_uMLUJwXjYGt20JGnqbTgvHt-bn9vmEBZjK2jpAV_tWf5JDYw800xwAOz-Oyvv/exec"
 function App() {
   const [name, setName] = useState("");
   const [nameDone, setNameDone] = useState(false);
@@ -153,7 +152,7 @@ function App() {
       }}>
         <h2 style={{
           fontSize:21,fontWeight:700,marginBottom:28, textAlign:"center"
-        }}>{`Q${step+1}. ${currQ.q}`}</h2>
+        }}>{Q${step+1}. ${currQ.q}}</h2>
         <form onSubmit={handleSubmit} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:22
         }}>
@@ -208,7 +207,7 @@ function App() {
         <div style={{
           marginTop:22, fontSize:13, color:"#888", textAlign:"center"
         }}>
-          {`상황 ${step+1} / ${QUESTIONS.length}`}
+          {상황 ${step+1} / ${QUESTIONS.length}}
         </div>
       </div>
     </div>
